@@ -1,5 +1,5 @@
 import cv2 as cv
-
+import numpy as np
 
 def main():
     # ファイルを読み込み
@@ -28,7 +28,7 @@ def main():
 
         # # 小さな領域の場合は間引く
         area = cv.contourArea(contour)
-        if area < 500:
+        if area < 50:
             continue
 
         # 画像全体を占める領域は除外する
@@ -39,8 +39,21 @@ def main():
         x,y,w,h = cv.boundingRect(contour)
 
         # 縦横比を取得
-        if w / h > 0.9 and w / h < 1.1:
-          dst = cv.rectangle(dst,(x,y),(x+w,y+h),(0,255,0),2)
+        if w / h > 1.7 and w / h < 1.5 or h / w > 1.7 and h / w < 1.5:
+            dst = cv.rectangle(dst,(x,y),(x+w,y+h),(0,255,0),2)
+
+        rect = cv.minAreaRect(contour)
+        box = cv.boxPoints(rect)
+
+        # 座標のリスト
+        box = np.int0(box)
+
+        # 縦横比を取得
+        ab = np.linalg.norm(box[1]-box[0])
+        bc = np.linalg.norm(box[2]-box[1])
+
+        if ab / bc > 1.7 and ab / bc < 1.5 or bc / ab > 1.7 and bc / ab < 1.5:
+            dst = cv.drawContours(dst,[box],0,(0,0,255),2)
 
     # 結果を保存
     cv.imwrite('output/result.png', dst)
